@@ -1,0 +1,56 @@
+# comment line begin with #, parameter line begin with #PBS
+# use absolute path.
+
+# man qsub
+# https://acf.ku.edu/wiki/index.php/Cluster_Jobs_Submission_Guide#Customizing_Data_for_Job_Array_Elements
+# http://www.rcg.sfu.ca/colony/job-optimization.html
+# http://pace.gatech.edu/how-run-lots-jobs-pace-managed-clusters?destination=node%2F1760
+# https://wikis.nyu.edu/display/NYUHPC/Tutorial+-+Submitting+a+job+using+qsub
+
+# qsub does not allow defining variables here.
+#node_number=2
+#proc_per_node=4
+
+# job name
+#PBS -N multi-matlab-paralleljob
+# mail, if abort, terminate or start
+#PBS -M huchenqi1992@163.com
+#PBS -m abe
+# destination queue
+#PBS -q hpcb
+# required resources 
+##PBS -l nodes=$node_number:ppn=$proc_per_node
+##PBS -l nodes=10:ppn=8
+# Allocate resource for each job. Not total amount for array.
+#PBS -l nodes=1:ppn=2
+# use job array, closed set.
+##PBS -t 1-$array_size
+#PBS -t 1-96
+# not rerunable
+#PBS -r n
+# join output and error      
+#PBS -j oe
+# output file, the qsub will automatically add PBS_ARRAYID as suffix
+#PBS -o ${PBS_JOBID}_out
+
+# cd into the submitting dir
+cd $PBS_O_WORKDIR
+
+NP=$(wc -l < $PBS_NODEFILE) # Number of Processes
+#cat $PBS_NODEFILE 
+echo $NP
+
+echo $PBS_JOBID
+# e.g. 12776[12].manager
+echo $PBS_ARRAYID
+# e.g. 12
+
+array_size=96
+
+/home/share/software/matlab/bin/matlab -nodisplay -nosplash -nodesktop -logfile log_print_hostname.txt -r "pbs_run($array_size, ${PBS_ARRAYID})"
+
+# qstat -at # -t shows all sub jobs independently
+# qstat -ft # show full info of jobs
+# qdel 13389[] # kill job array 13389[]
+# qstat -tn1u hxm_stu
+# qacct -j <jobId>
